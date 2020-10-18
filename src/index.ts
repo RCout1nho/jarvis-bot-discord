@@ -32,7 +32,6 @@ commandFiles.forEach(async (filename) => {
 });
 
 client.on("message", async (msg) => {
-  console.log("mensagem:", msg);
   if (process.env.PREFIX) {
     if (!msg.content.startsWith(process.env.PREFIX) || msg.author.bot) return;
 
@@ -42,10 +41,7 @@ client.on("message", async (msg) => {
     try {
       client.commands?.get(command)?.default.execute({ client, msg, args });
     } catch (e) {
-      console.error(e);
       return await msg.reply("Não entendi o que quis dizer :/");
     }
-  } else {
-    console.error("Não tem PREFIX");
   }
 });
