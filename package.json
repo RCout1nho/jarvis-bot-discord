@@ -35,5 +35,10 @@
   },
   "engines": {
     "node": "12.16.1"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
   }
 }
