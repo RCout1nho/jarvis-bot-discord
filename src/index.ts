@@ -23,7 +23,7 @@ client.queues = new Map();
 const commandFiles = fs
   .readdirSync(path.join(__dirname, "commands"))
   .filter((filename) =>
-    filename.endsWith(process.env.EVIRONMENT === "dev" ? ".ts" : ".js")
+    filename.endsWith(process.env.ENVIRONMENT === "dev" ? ".ts" : ".js")
   );
 
 commandFiles.forEach(async (filename) => {
