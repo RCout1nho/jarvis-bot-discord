@@ -4,9 +4,10 @@ import {
   Collection,
   VoiceConnection,
   StreamDispatcher,
-} from 'discord.js';
-import ytSearch, { VideoSearchResult } from 'yt-search';
-import ytdl from 'ytdl-core-discord';
+  MessageEmbedOptions,
+} from "discord.js";
+import ytSearch, { VideoSearchResult } from "yt-search";
+import ytdl from "ytdl-core-discord";
 
 interface IClient extends Client {
   commands?: Collection<any, any>;
@@ -35,7 +36,7 @@ interface IQueue {
 }
 
 const execute = ({ client, msg, args }: ICommandProps) => {
-  const musicName = args.join(' ');
+  const musicName = args.join(" ");
   try {
     ytSearch(musicName, async (err, result) => {
       if (err) {
@@ -51,12 +52,12 @@ const execute = ({ client, msg, args }: ICommandProps) => {
             await playMusic({ client, msg, args, msc: music });
           }
         } else {
-          return msg.reply('Não encontrei nenhuma música com esse nome :(');
+          return msg.reply("Não encontrei nenhuma música com esse nome :(");
         }
       }
     });
   } catch {
-    return msg.reply('Ocorreu um erro, tente novamente mais tarde!');
+    return msg.reply("Ocorreu um erro, tente novamente mais tarde!");
   }
 };
 
@@ -71,7 +72,7 @@ const playMusic = async ({ client, msg, args, msc }: ICommandMusicProps) => {
 
   if (!msg.member?.voice.channel) {
     return msg.reply(
-      'Você deve estar em um canal de voz para reproduzir uma música',
+      "Você deve estar em um canal de voz para reproduzir uma música"
     );
   }
 
@@ -87,13 +88,30 @@ const playMusic = async ({ client, msg, args, msc }: ICommandMusicProps) => {
   }
 
   if (queue && msc) {
-    queue.dispatcher = await queue?.connection.play(
-      await ytdl(msc.url, { highWaterMark: 1 << 25, filter: 'audioonly' }),
-      {
-        type: 'opus',
+    const embedResponse: MessageEmbedOptions = {
+      color: "#0099ff",
+      title: "Tocando Agora",
+      author: {
+        name: msc.title,
+        url: msc.url,
       },
+      thumbnail: {
+        url: msc.image,
+      },
+      footer: {
+        text: `Adicionado por ${msg.author.username}#${msg.author.discriminator}`,
+      },
+    };
+
+    msg.channel.send({ embed: embedResponse });
+
+    queue.dispatcher = await queue?.connection.play(
+      await ytdl(msc.url, { highWaterMark: 1 << 25, filter: "audioonly" }),
+      {
+        type: "opus",
+      }
     );
-    queue?.dispatcher?.on('finish', () => {
+    queue?.dispatcher?.on("finish", () => {
       queue?.songs.shift();
       playMusic({ client, msg, args, msc: queue?.songs[0] });
     });
@@ -102,8 +120,8 @@ const playMusic = async ({ client, msg, args, msc }: ICommandMusicProps) => {
 };
 
 export default {
-  name: 'p',
-  help: 'Adicionar música à fila',
+  name: "p",
+  help: "Adicionar música à fila",
   execute,
   playMusic,
 };

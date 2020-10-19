@@ -1,4 +1,4 @@
-import { Client, Message, Collection } from 'discord.js';
+import { Client, Message, Collection, MessageEmbedOptions } from "discord.js";
 
 interface IClient extends Client {
   commands?: Collection<any, any>;
@@ -12,16 +12,18 @@ interface ICommandProps {
 }
 
 const execute = async ({ client, msg, args }: ICommandProps) => {
-  if (msg.member?.hasPermission('MANAGE_MESSAGES')) {
+  if (msg.member?.hasPermission("MANAGE_MESSAGES")) {
     const messages = await msg.channel.messages.fetch();
     messages.forEach((m) => {
       m.delete();
     });
+  } else {
+    msg.reply("Você não tem permissão pare executar essa ação");
   }
 };
 
 export default {
-  name: 'clear_chat',
-  help: 'Limpar o chat',
+  name: "clear_chat",
+  help: "Limpar o chat",
   execute,
 };
