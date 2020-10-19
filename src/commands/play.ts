@@ -47,6 +47,23 @@ const execute = ({ client, msg, args }: ICommandProps) => {
           const queue: IQueue = client.queues?.get(msg.guild?.id);
           if (queue) {
             queue.songs.push(music);
+            const embedResponse: MessageEmbedOptions = {
+              color: "#0099ff",
+              title: "Adicionado à fila",
+              thumbnail: {
+                url: music.image,
+              },
+              description: `[${music.title}](${music.url})`,
+              footer: {
+                text: `Adicionado por ${msg.author.username}#${msg.author.discriminator}`,
+                icon_url: msg.author.avatar
+                  ? `https://cdn.discordapp.com/avatars/${msg.author.id}/${msg.author.avatar}.png`
+                  : `https://cdn.discordapp.com/embed/avatars/${
+                      Number(msg.author.discriminator) % 5
+                    }.png`,
+              },
+            };
+            msg.channel.send({ embed: embedResponse });
             client.queues?.set(msg.guild?.id, queue);
           } else {
             await playMusic({ client, msg, args, msc: music });
@@ -91,18 +108,19 @@ const playMusic = async ({ client, msg, args, msc }: ICommandMusicProps) => {
     const embedResponse: MessageEmbedOptions = {
       color: "#0099ff",
       title: "Tocando Agora",
-      author: {
-        name: msc.title,
-        url: msc.url,
-      },
       thumbnail: {
         url: msc.image,
       },
+      description: `[${msc.title}](${msc.url})`,
       footer: {
         text: `Adicionado por ${msg.author.username}#${msg.author.discriminator}`,
+        icon_url: msg.author.avatar
+          ? `https://cdn.discordapp.com/avatars/${msg.author.id}/${msg.author.avatar}.png`
+          : `https://cdn.discordapp.com/embed/avatars/${
+              Number(msg.author.discriminator) % 5
+            }.png`,
       },
     };
-
     msg.channel.send({ embed: embedResponse });
 
     queue.dispatcher = await queue?.connection.play(
