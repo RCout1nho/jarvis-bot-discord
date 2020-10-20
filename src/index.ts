@@ -39,7 +39,9 @@ client.on("message", async (msg) => {
     const command = args.shift();
 
     try {
-      client.commands?.get(command)?.default.execute({ client, msg, args });
+      await client.commands
+        ?.get(command)
+        ?.default.execute({ client, msg, args });
     } catch (e) {
       return await msg.reply("Não entendi o que quis dizer :/");
     }
