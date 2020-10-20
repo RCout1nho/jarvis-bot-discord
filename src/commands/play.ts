@@ -227,6 +227,7 @@ const playMusic = async ({ client, msg, args, msc }: ICommandMusicProps) => {
 export default {
   name: "play",
   help: "Adicionar música à fila",
+  aliases: ["p"],
   execute,
   playMusic,
 };
