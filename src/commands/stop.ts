@@ -4,8 +4,8 @@ import {
   Collection,
   VoiceConnection,
   StreamDispatcher,
-} from 'discord.js';
-import { VideoSearchResult } from 'yt-search';
+} from "discord.js";
+import { VideoSearchResult } from "yt-search";
 
 interface IClient extends Client {
   commands?: Collection<any, any>;
@@ -29,16 +29,18 @@ interface IQueue {
 const execute = ({ client, msg, args }: ICommandProps) => {
   const queue: IQueue = client.queues?.get(msg.guild?.id);
   if (!queue) {
-    return msg.reply('Não há musica sendo reproduzida');
+    return msg.reply("Não há musica sendo reproduzida");
   }
 
   queue.songs = [];
   client.queues?.set(msg.guild?.id, queue);
   queue.dispatcher?.end();
+
+  msg.reply("A fila de músicas foi excluída");
 };
 
 export default {
-  name: 'stop',
-  help: 'Parar música',
+  name: "stop",
+  help: "Parar música",
   execute,
 };
