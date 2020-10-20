@@ -13,6 +13,14 @@ interface IClient extends Client {
   queues?: Map<any, any>;
 }
 
+interface IYtVideoProps {
+  url: string;
+  type?: string;
+  title: string;
+  image?: string;
+  videoId?: string;
+}
+
 interface ICommandProps {
   client: IClient;
   msg: Message;
@@ -33,7 +41,7 @@ const execute = async ({ client, msg, args }: ICommandProps): Promise<any> => {
     return msg.reply("Não há musicas na fila");
   }
 
-  if (args) {
+  if (args.length > 0) {
     if (args[0] === "-clear") {
       if (!msg.member?.hasPermission("MANAGE_MESSAGES")) {
         return msg.reply(
@@ -50,9 +58,16 @@ const execute = async ({ client, msg, args }: ICommandProps): Promise<any> => {
   }
 
   let description = "";
-  queue.songs.forEach((song, index) => {
-    description += `${index + 1}. [${song.title}](${song.url})\n`;
-  });
+  for (let i = 0; i < queue.songs.length; i++) {
+    if (description.length + queue.songs[i].title.length >= 2000 || i == 15) {
+      description += `[mais ${queue.songs.length - i + 1} músicas]`;
+      break;
+    } else {
+      description += `${i + 1}. [${queue.songs[i].title}](${
+        queue.songs[i].url
+      })\n`;
+    }
+  }
 
   const embedResponse: MessageEmbedOptions = {
     title: "Fila de reprodução",
