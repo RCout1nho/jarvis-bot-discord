@@ -8,6 +8,8 @@ import {
 } from "discord.js";
 import { VideoSearchResult } from "yt-search";
 
+import stop from "./stop";
+
 interface IClient extends Client {
   commands?: Collection<any, any>;
   queues?: Map<any, any>;
@@ -31,6 +33,19 @@ const execute = ({ client, msg, args }: ICommandProps) => {
   const queue: IQueue = client.queues?.get(msg.guild?.id);
   if (!queue) {
     return msg.reply("Não há musicas na fila");
+  }
+
+  if (args) {
+    if (args[0] === "-clear") {
+      if (!msg.member?.hasPermission("MANAGE_MESSAGES")) {
+        return msg.reply(
+          'Você precisa ter permissão para "Gerenciar mensagens" para executar essa ação'
+        );
+      }
+      stop.execute({ client, msg, args: [] });
+      client.queues?.set(msg.guild?.id, undefined);
+      return msg.reply("A fila de músicas foi apagada!");
+    }
   }
 
   let description = "";
