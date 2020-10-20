@@ -11,14 +11,14 @@ interface ICommandProps {
   args: string[];
 }
 
-const execute = async ({ client, msg, args }: ICommandProps) => {
+const execute = async ({ client, msg, args }: ICommandProps): Promise<any> => {
   if (msg.member?.hasPermission("MANAGE_MESSAGES")) {
     const messages = await msg.channel.messages.fetch();
-    messages.forEach((m) => {
-      m.delete();
+    messages.forEach(async (m) => {
+      await m.delete();
     });
   } else {
-    msg.reply("Você não tem permissão pare executar essa ação");
+    await msg.reply("Você não tem permissão pare executar essa ação");
   }
 };
 
