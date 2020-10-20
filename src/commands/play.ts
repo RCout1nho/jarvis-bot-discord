@@ -6,8 +6,10 @@ import {
   StreamDispatcher,
   MessageEmbedOptions,
 } from "discord.js";
-import ytSearch, { VideoSearchResult } from "yt-search";
+import ytSearch from "yt-search";
 import ytdl from "ytdl-core-discord";
+import queryString from "query-string";
+import isUrl from "../utils/isUrl";
 
 interface IClient extends Client {
   commands?: Collection<any, any>;
@@ -20,61 +22,147 @@ interface ICommandProps {
   args: string[];
 }
 
+interface IYtVideoProps {
+  url: string;
+  type?: string;
+  title: string;
+  image?: string;
+  videoId?: string;
+}
+
 interface ICommandMusicProps {
   client: IClient;
   msg: Message;
   args: string[];
-  msc?: VideoSearchResult;
+  msc?: IYtVideoProps;
 }
 
 interface IQueue {
   volume: number;
   connection: VoiceConnection;
   dispatcher?: StreamDispatcher;
-  songs: VideoSearchResult[];
+  songs: IYtVideoProps[];
   client?: IClient;
 }
 
 const execute = async ({ client, msg, args }: ICommandProps): Promise<any> => {
-  const musicName = args.join(" ");
-  try {
-    ytSearch(musicName, async (err, result) => {
-      if (err) {
-        throw new Error();
-      } else {
-        if (result && result.videos.length > 0) {
-          const music = result.videos[0];
-          const queue: IQueue = client.queues?.get(msg.guild?.id);
-          if (queue) {
-            queue.songs.push(music);
-            const embedResponse: MessageEmbedOptions = {
-              color: "#0099ff",
-              title: "Adicionado à fila",
-              thumbnail: {
-                url: music.image,
-              },
-              description: `[${music.title}](${music.url})`,
-              footer: {
-                text: `Adicionado por ${msg.author.username}#${msg.author.discriminator}`,
-                icon_url: msg.author.avatar
-                  ? `https://cdn.discordapp.com/avatars/${msg.author.id}/${msg.author.avatar}.png`
-                  : `https://cdn.discordapp.com/embed/avatars/${
-                      Number(msg.author.discriminator) % 5
-                    }.png`,
-              },
-            };
-            await msg.channel.send({ embed: embedResponse });
-            client.queues?.set(msg.guild?.id, queue);
-          } else {
-            await playMusic({ client, msg, args, msc: music });
-          }
+  if (args[0] !== "-playlist") {
+    try {
+      const musicName = args.join(" ");
+      ytSearch(musicName, async (err, result) => {
+        if (err) {
+          throw new Error();
         } else {
-          return msg.reply("Não encontrei nenhuma música com esse nome :(");
+          if (result && result.videos.length > 0) {
+            const music = result.videos[0];
+            const queue: IQueue = client.queues?.get(msg.guild?.id);
+            if (queue) {
+              queue.songs.push(music);
+              const embedResponse: MessageEmbedOptions = {
+                color: "#0099ff",
+                title: "Adicionado à fila",
+                thumbnail: {
+                  url: music.image,
+                },
+                description: `[${music.title}](${music.url})`,
+                footer: {
+                  text: `Adicionado por ${msg.author.username}#${msg.author.discriminator}`,
+                  icon_url: msg.author.avatar
+                    ? `https://cdn.discordapp.com/avatars/${msg.author.id}/${msg.author.avatar}.png`
+                    : `https://cdn.discordapp.com/embed/avatars/${
+                        Number(msg.author.discriminator) % 5
+                      }.png`,
+                },
+              };
+              await msg.channel.send({ embed: embedResponse });
+              client.queues?.set(msg.guild?.id, queue);
+            } else {
+              await playMusic({ client, msg, args, msc: music });
+            }
+          } else {
+            return msg.reply("Não encontrei nenhuma música com esse nome :(");
+          }
         }
+      });
+    } catch {
+      return msg.reply("Ocorreu um erro, tente novamente mais tarde!");
+    }
+  } else {
+    const url = args[1];
+    if (!isUrl(url)) {
+      return msg.reply("O argumento precisa ser a url da playlist");
+    }
+
+    const playlistId =
+      typeof queryString.parse(url).list === "string"
+        ? queryString.parse(url).list?.toString()
+        : null;
+
+    if (playlistId) {
+      try {
+        await ytSearch({ listId: playlistId }, async (err, result) => {
+          if (err) {
+            throw new Error();
+          } else {
+            if (result && result.videos.length > 0) {
+              const queue: IQueue = client.queues?.get(msg.guild?.id);
+              if (queue) {
+                result.videos.forEach((video) => {
+                  const music: IYtVideoProps = {
+                    url: video.url,
+                    type: "video",
+                    title: video.title,
+                  };
+                  queue?.songs.push(music);
+                });
+                const embedResponse: MessageEmbedOptions = {
+                  color: "#0099ff",
+                  title: "Playlist adicionada à fila",
+                  thumbnail: {
+                    url: result.image,
+                  },
+                  description: `[${result.title}](${result.url})`,
+                  footer: {
+                    text: `Adicionado por ${msg.author.username}#${msg.author.discriminator}`,
+                    icon_url: msg.author.avatar
+                      ? `https://cdn.discordapp.com/avatars/${msg.author.id}/${msg.author.avatar}.png`
+                      : `https://cdn.discordapp.com/embed/avatars/${
+                          Number(msg.author.discriminator) % 5
+                        }.png`,
+                  },
+                };
+                await msg.channel.send({ embed: embedResponse });
+                client.queues?.set(msg.guild?.id, queue);
+              } else {
+                const connection = await msg.member?.voice?.channel?.join();
+                const music = result.videos.map((video) => {
+                  const music: IYtVideoProps = {
+                    url: `https://www.youtube.com/watch?v=${video.videoId}`,
+                    type: "video",
+                    title: video.title,
+                  };
+                  return music;
+                });
+                const queue = {
+                  volume: 10,
+                  connection,
+                  dispatcher: undefined,
+                  songs: music,
+                };
+                client.queues?.set(msg.guild?.id, queue);
+                await playMusic({ client, msg, args, msc: queue.songs[0] });
+              }
+            } else {
+              return msg.reply(
+                "Não encontrei nenhuma playlist com esse nome :("
+              );
+            }
+          }
+        });
+      } catch {
+        return msg.reply("Ocorreu um erro, tente novamente mais tarde!");
       }
-    });
-  } catch {
-    return msg.reply("Ocorreu um erro, tente novamente mais tarde!");
+    }
   }
 };
 
@@ -105,6 +193,12 @@ const playMusic = async ({ client, msg, args, msc }: ICommandMusicProps) => {
   }
 
   if (queue && msc) {
+    queue.dispatcher = await queue?.connection.play(
+      await ytdl(msc.url, { highWaterMark: 1 << 25, filter: "audioonly" }),
+      {
+        type: "opus",
+      }
+    );
     const embedResponse: MessageEmbedOptions = {
       color: "#0099ff",
       title: "Tocando Agora",
@@ -122,13 +216,6 @@ const playMusic = async ({ client, msg, args, msc }: ICommandMusicProps) => {
       },
     };
     msg.channel.send({ embed: embedResponse });
-
-    queue.dispatcher = await queue?.connection.play(
-      await ytdl(msc.url, { highWaterMark: 1 << 25, filter: "audioonly" }),
-      {
-        type: "opus",
-      }
-    );
     queue?.dispatcher?.on("finish", () => {
       queue?.songs.shift();
       playMusic({ client, msg, args, msc: queue?.songs[0] });
