@@ -1,4 +1,4 @@
-import { Client, Message, Collection, MessageEmbedOptions } from 'discord.js';
+import { Client, Message, Collection, MessageEmbedOptions } from "discord.js";
 
 interface IClient extends Client {
   commands?: Collection<any, any>;
@@ -11,11 +11,11 @@ interface ICommandProps {
   args: string[];
 }
 
-const execute = ({ client, msg, args }: ICommandProps) => {
+const execute = async ({ client, msg, args }: ICommandProps): Promise<any> => {
   const embed: MessageEmbedOptions = {
-    color: '#0099ff',
+    color: "#0099ff",
     title: `Seja bem-vindo, ${msg.author.username}#${msg.author.discriminator}`,
-    description: 'Sinta-se em casa',
+    description: "Sinta-se em casa",
     thumbnail: {
       url: msg.author.avatar
         ? `https://cdn.discordapp.com/avatars/${msg.author.id}/${msg.author.avatar}.png`
@@ -24,22 +24,22 @@ const execute = ({ client, msg, args }: ICommandProps) => {
           }.png`,
     },
     footer: {
-      text: 'Jarvis discord bot by RCout1nho, all rights reserved ®',
+      text: "Jarvis discord bot by RCout1nho, all rights reserved ®",
     },
     fields: [
       {
-        name: 'Você é o membro nº',
-        value: msg.guild?.memberCount.toString() || '0',
+        name: "Você é o membro nº",
+        value: msg.guild?.memberCount.toString() || "0",
         inline: false,
       },
     ],
     timestamp: new Date(),
   };
-  msg.channel.send({ embed });
+  await msg.channel.send({ embed });
 };
 
 export default {
-  name: 'embed',
-  help: 'Retorna uma MessageEmbed',
-  execute,
+  // name: "embed",
+  // help: "Retorna uma MessageEmbed",
+  // execute,
 };

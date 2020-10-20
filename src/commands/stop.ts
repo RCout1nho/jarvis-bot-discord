@@ -26,7 +26,7 @@ interface IQueue {
   client?: IClient;
 }
 
-const execute = ({ client, msg, args }: ICommandProps) => {
+const execute = async ({ client, msg, args }: ICommandProps): Promise<any> => {
   const queue: IQueue = client.queues?.get(msg.guild?.id);
   if (!queue) {
     return msg.reply("Não há musica sendo reproduzida");
@@ -36,7 +36,7 @@ const execute = ({ client, msg, args }: ICommandProps) => {
   client.queues?.set(msg.guild?.id, queue);
   queue.dispatcher?.end();
 
-  msg.reply("A fila de músicas foi excluída");
+  await msg.reply("A fila de músicas foi excluída");
 };
 
 export default {

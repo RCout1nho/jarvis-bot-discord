@@ -1,4 +1,4 @@
-import { Client, Message, Collection } from 'discord.js';
+import { Client, Message, Collection } from "discord.js";
 
 interface IClient extends Client {
   commands?: Collection<any, any>;
@@ -11,8 +11,8 @@ interface ICommandProps {
   args: string[];
 }
 
-const execute = ({ client, msg, args }: ICommandProps) => {
-  let response = '### COMANDOS ###\n';
+const execute = async ({ client, msg, args }: ICommandProps): Promise<any> => {
+  let response = "### COMANDOS ###\n";
   client?.commands?.forEach((command: any) => {
     if (command.default.help) {
       response += `**${process.env.PREFIX}${command.default.name}**: ${command.default.help}\n`;
@@ -23,6 +23,6 @@ const execute = ({ client, msg, args }: ICommandProps) => {
 };
 
 export default {
-  name: 'help',
+  name: "help",
   execute,
 };

@@ -4,8 +4,8 @@ import {
   Collection,
   VoiceConnection,
   StreamDispatcher,
-} from 'discord.js';
-import { VideoSearchResult } from 'yt-search';
+} from "discord.js";
+import { VideoSearchResult } from "yt-search";
 
 interface IClient extends Client {
   commands?: Collection<any, any>;
@@ -26,16 +26,16 @@ interface IQueue {
   client?: IClient;
 }
 
-const execute = ({ client, msg, args }: ICommandProps) => {
+const execute = async ({ client, msg, args }: ICommandProps): Promise<any> => {
   const queue: IQueue = client.queues?.get(msg.guild?.id);
   if (!queue) {
-    return msg.reply('Não há musica sendo reproduzida');
+    return msg.reply("Não há musica sendo reproduzida");
   }
 
-  const volume = Number(args.join(' '));
+  const volume = Number(args.join(" "));
 
   if (isNaN(volume) || volume < 0 || volume > 10) {
-    return msg.reply('O volume deve ser um valor entre 0 e 10');
+    return msg.reply("O volume deve ser um valor entre 0 e 10");
   }
   queue.dispatcher?.setVolume(volume / 10);
   queue.volume = volume;
@@ -43,7 +43,7 @@ const execute = ({ client, msg, args }: ICommandProps) => {
 };
 
 export default {
-  name: 'vol',
-  help: 'Ajustar volume(0-10)',
+  name: "vol",
+  help: "Ajustar volume(0-10)",
   execute,
 };

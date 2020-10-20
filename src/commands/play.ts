@@ -35,7 +35,7 @@ interface IQueue {
   client?: IClient;
 }
 
-const execute = ({ client, msg, args }: ICommandProps) => {
+const execute = async ({ client, msg, args }: ICommandProps): Promise<any> => {
   const musicName = args.join(" ");
   try {
     ytSearch(musicName, async (err, result) => {
@@ -63,7 +63,7 @@ const execute = ({ client, msg, args }: ICommandProps) => {
                     }.png`,
               },
             };
-            msg.channel.send({ embed: embedResponse });
+            await msg.channel.send({ embed: embedResponse });
             client.queues?.set(msg.guild?.id, queue);
           } else {
             await playMusic({ client, msg, args, msc: music });

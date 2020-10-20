@@ -4,8 +4,8 @@ import {
   Collection,
   VoiceConnection,
   StreamDispatcher,
-} from 'discord.js';
-import { VideoSearchResult } from 'yt-search';
+} from "discord.js";
+import { VideoSearchResult } from "yt-search";
 
 interface IClient extends Client {
   commands?: Collection<any, any>;
@@ -26,17 +26,17 @@ interface IQueue {
   client?: IClient;
 }
 
-const execute = ({ client, msg, args }: ICommandProps) => {
+const execute = async ({ client, msg, args }: ICommandProps): Promise<any> => {
   const queue: IQueue = client.queues?.get(msg.guild?.id);
   if (!queue) {
-    return msg.reply('Não há musica sendo reproduzida');
+    return msg.reply("Não há musica sendo reproduzida");
   }
 
   queue.dispatcher?.pause();
 };
 
 export default {
-  name: 'pause',
-  help: 'Pausa a música',
+  name: "pause",
+  help: "Pausa a música",
   execute,
 };

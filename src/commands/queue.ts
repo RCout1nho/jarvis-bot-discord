@@ -27,7 +27,7 @@ interface IQueue {
   client?: IClient;
 }
 
-const execute = ({ client, msg, args }: ICommandProps) => {
+const execute = async ({ client, msg, args }: ICommandProps): Promise<any> => {
   const queue: IQueue = client.queues?.get(msg.guild?.id);
   if (!queue) {
     return msg.reply("Não há musicas na fila");
@@ -67,7 +67,7 @@ const execute = ({ client, msg, args }: ICommandProps) => {
           }.png`,
     },
   };
-  msg.channel.send({ embed: embedResponse });
+  await msg.channel.send({ embed: embedResponse });
 };
 
 export default {
