@@ -8,8 +8,6 @@ import {
 } from "discord.js";
 import { VideoSearchResult } from "yt-search";
 
-import stop from "./stop";
-
 interface IClient extends Client {
   commands?: Collection<any, any>;
   queues?: Map<any, any>;
@@ -42,8 +40,11 @@ const execute = ({ client, msg, args }: ICommandProps) => {
           'Você precisa ter permissão para "Gerenciar mensagens" para executar essa ação'
         );
       }
-      stop.execute({ client, msg, args: [] });
-      client.queues?.set(msg.guild?.id, undefined);
+
+      queue.songs = [queue.songs[0]];
+
+      client.queues?.set(msg.guild?.id, queue);
+
       return msg.reply("A fila de músicas foi apagada!");
     }
   }
