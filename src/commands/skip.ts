@@ -4,10 +4,10 @@ import {
   Collection,
   VoiceConnection,
   StreamDispatcher,
-} from 'discord.js';
-import { VideoSearchResult } from 'yt-search';
+} from "discord.js";
+import { VideoSearchResult } from "yt-search";
 
-import PlayCommand from './play';
+import PlayCommand from "./play";
 
 interface IClient extends Client {
   commands?: Collection<any, any>;
@@ -33,15 +33,19 @@ const execute = ({ client, msg, args }: ICommandProps) => {
   const queue: IQueue = client.queues?.get(msg.guild?.id);
 
   if (!queue) {
-    return msg.reply('Não há musica sendo reproduzida');
+    return msg.reply("Não há musica sendo reproduzida");
   }
+
+  console.log(queue);
+
   queue.songs.shift();
+  queue.volume = client.queues?.get(msg.guild?.id).volume;
   client.queues?.set(msg.guild?.id, queue);
   playMusic({ client, msg, args, msc: queue.songs[0] });
 };
 
 export default {
-  name: 'skip',
-  help: 'Pular música',
+  name: "skip",
+  help: "Pular música",
   execute,
 };

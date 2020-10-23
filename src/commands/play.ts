@@ -107,6 +107,7 @@ const execute = async ({ client, msg, args }: ICommandProps): Promise<any> => {
             if (result && result.videos.length > 0) {
               const queue: IQueue = client.queues?.get(msg.guild?.id);
               if (queue) {
+                queue.volume = client.queues?.get(msg.guild?.id).volume;
                 result.videos.forEach((video) => {
                   const music: IYtVideoProps = {
                     url: video.url,
@@ -180,25 +181,38 @@ const playMusic = async ({ client, msg, args, msc }: ICommandMusicProps) => {
       "Você deve estar em um canal de voz para reproduzir uma música"
     );
   }
-
-  if (!queue && msc) {
-    const connection = await msg.member.voice.channel.join();
-
-    queue = {
-      volume: 10,
-      connection,
-      dispatcher: undefined,
-      songs: [msc],
-    };
+  let connection;
+  if (!msg.guild?.voice?.connection) {
+    try {
+      connection = await msg.member.voice.channel.join();
+    } catch {
+      return msg.reply("Desculpe, eu não estou conseguindo me conectar agora");
+    }
+    if (!queue && msc) {
+      queue = {
+        volume: 10,
+        connection,
+        dispatcher: undefined,
+        songs: [msc],
+      };
+    }
   }
 
   if (queue && msc) {
-    queue.dispatcher = await queue?.connection.play(
-      await ytdl(msc.url, { highWaterMark: 1 << 25, filter: "audioonly" }),
-      {
-        type: "opus",
-      }
-    );
+    queue.volume = client.queues?.get(msg.guild?.id)
+      ? client.queues?.get(msg.guild?.id).volume
+      : 10;
+    try {
+      queue.dispatcher = queue?.connection.play(
+        await ytdl(msc.url, { highWaterMark: 1 << 25, filter: "audioonly" }),
+        {
+          type: "opus",
+        }
+      );
+      queue.dispatcher.setVolume(queue.volume);
+    } catch {
+      return msg.reply("Desculpe, estou com problemas de conexão");
+    }
     const embedResponse: MessageEmbedOptions = {
       color: "#0099ff",
       title: "Tocando Agora",
@@ -215,10 +229,10 @@ const playMusic = async ({ client, msg, args, msc }: ICommandMusicProps) => {
             }.png`,
       },
     };
-    msg.channel.send({ embed: embedResponse });
-    queue?.dispatcher?.on("finish", () => {
+    await msg.channel.send({ embed: embedResponse });
+    queue?.dispatcher?.on("finish", async () => {
       queue?.songs.shift();
-      playMusic({ client, msg, args, msc: queue?.songs[0] });
+      await playMusic({ client, msg, args, msc: queue?.songs[0] });
     });
     client.queues?.set(msg.member.guild.id, queue);
   }
@@ -227,6 +241,7 @@ const playMusic = async ({ client, msg, args, msc }: ICommandMusicProps) => {
 export default {
   name: "play",
   help: "Adicionar música à fila",
+  alias: "p",
   execute,
   playMusic,
 };

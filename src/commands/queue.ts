@@ -13,14 +13,6 @@ interface IClient extends Client {
   queues?: Map<any, any>;
 }
 
-interface IYtVideoProps {
-  url: string;
-  type?: string;
-  title: string;
-  image?: string;
-  videoId?: string;
-}
-
 interface ICommandProps {
   client: IClient;
   msg: Message;
