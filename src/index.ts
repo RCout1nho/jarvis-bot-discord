@@ -5,6 +5,7 @@ import "dotenv/config";
 import Discord, { Client, Collection } from "discord.js";
 
 interface IClient extends Client {
+  aliases?: Collection<any, any>;
   commands?: Collection<any, any>;
   queues?: Map<any, any>;
 }
@@ -18,6 +19,7 @@ client.on("ready", () => {
 });
 
 client.commands = new Discord.Collection();
+client.aliases = new Discord.Collection();
 client.queues = new Map();
 
 const commandFiles = fs
@@ -29,6 +31,9 @@ const commandFiles = fs
 commandFiles.forEach(async (filename) => {
   const command = await import(`./commands/${filename}`);
   client.commands?.set(command.default.name, command);
+  if (command.default.alias) {
+    client.aliases?.set(command.default.alias, command);
+  }
 });
 
 client.on("message", async (msg) => {
@@ -39,11 +44,18 @@ client.on("message", async (msg) => {
     const command = args.shift();
 
     try {
-      await client.commands
+      const com = await client.commands
         ?.get(command)
         ?.default.execute({ client, msg, args });
+
+      const alias = await client.aliases
+        ?.get(command)
+        ?.default.execute({ client, msg, args });
+      if (!com && !alias) {
+        await msg.reply("Não entendi o que quis dizer :/");
+      }
     } catch (e) {
-      return await msg.reply("Não entendi o que quis dizer :/");
+      return msg.reply("Ocorreu um erro, tente novamente mais tarde!");
     }
   }
 });
