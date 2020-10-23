@@ -43,7 +43,8 @@ const execute = async ({ client, msg, args }: ICommandProps): Promise<any> => {
 };
 
 export default {
-  name: "vol",
+  name: "volume",
+  alias: "v",
   help: "Ajustar volume(0-10)",
   execute,
 };
