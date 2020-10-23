@@ -23,7 +23,7 @@ const execute = async ({ client, msg, args }: ICommandProps): Promise<any> => {
   response += "\n**Atalhos**:\n";
 
   client.aliases?.forEach((alias: any) => {
-    response += `${process.env.PREFIX}${alias.default.name} -> ${process.env.PREFIX}${alias.default.alias}`;
+    response += `${process.env.PREFIX}${alias.default.name} -> ${process.env.PREFIX}${alias.default.alias}\n`;
   });
 
   const embed: MessageEmbedOptions = {
